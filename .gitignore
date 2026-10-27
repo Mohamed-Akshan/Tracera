@@ -1,0 +1,43 @@
+
+# Environment variables and API keys
+.env
+.env.*
+!.env.example
+
+# Python virtual environment
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Frontend dependencies
+node_modules/
+frontend/dist/
+dist/
+
+# Local uploaded evidence
+backend/data/uploads/
+
+# Temporary files and logs
+*.tmp
+*.log
+*.sqlite3
+
+# IDE and system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+*.egg-info/
+
+# LangSmith and test reports
+.coverage
+htmlcov/

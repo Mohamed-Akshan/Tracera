@@ -1,0 +1,31 @@
+# API server
+fastapi
+uvicorn
+python-multipart
+
+# Application configuration
+pydantic-settings
+python-dotenv
+
+# Database
+sqlalchemy
+psycopg2-binary
+
+# AI, agents and tracing
+langchain
+langchain-core
+langchain-google-genai
+langchain-groq
+langgraph
+langsmith
+
+# Retrieval and document ingestion
+langchain-pinecone
+langchain-text-splitters
+langchain-community
+pinecone
+pypdf
+
+# Tests and HTTP
+pytest
+httpx
