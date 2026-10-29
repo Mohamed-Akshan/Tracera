@@ -25,6 +25,9 @@ langchain-text-splitters
 langchain-community
 pinecone
 pypdf
+rank-bm25
+sentence-transformers
+jq   #json loader
 
 # Tests and HTTP
 pytest

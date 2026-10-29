@@ -4,9 +4,10 @@
 .env.*
 !.env.example
 
-# Python virtual environment
+# Python virtual environments
 venv/
 .venv/
+env/
 
 # Python cache
 __pycache__/
@@ -15,29 +16,53 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Frontend dependencies
+# Python build files
+build/
+dist/
+*.egg-info/
+
+# Node.js / React
 node_modules/
 frontend/dist/
-dist/
+frontend/build/
+.next/
+.vite/
 
-# Local uploaded evidence
+# Uploaded evidence and generated data
 backend/data/uploads/
+backend/data/bm25/
+backend/data/reports/
+backend/uploads/
+backend/reports/
 
-# Temporary files and logs
-*.tmp
-*.log
+# Local databases
+*.db
+*.sqlite
 *.sqlite3
 
-# IDE and system files
+# Logs
+*.log
+
+# IDE settings
 .vscode/
 .idea/
+
+# Operating system files
 .DS_Store
 Thumbs.db
 
-# Build artifacts
-build/
-*.egg-info/
-
-# LangSmith and test reports
+# Testing and coverage
 .coverage
 htmlcov/
+coverage/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# Local secrets
+*.pem
+*.key
+credentials.json
+service-account*.json
