@@ -1,107 +1,75 @@
 
-import json
-from pathlib import Path
+import re
 
-from langchain_core.documents import Document
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
 
-from app.rag.vector_store import vector_store
+from app.db.database import SessionLocal
+from app.db.models import EvidenceFile
+
+from app.rag.loaders import load_document
+from app.rag.splitter import split_document
+from app.rag.vectorstore import semantic_retriever
 
 
-# Folder for storing BM25 evidence
-BM25_DIR = Path(__file__).resolve().parents[2] / "data" / "bm25"
+# Split technical text into searchable terms
+def tokenize(text):
+    return re.findall(r"[a-zA-Z0-9_.-]+", text.lower())
 
 
-# 1. Save chunks for BM25 retrieval
-def save_bm25(chunks, session_id):
+# Create BM25 retriever from uploaded evidence
+def keyword_retriever(investigation_id):
 
-    BM25_DIR.mkdir(parents=True, exist_ok=True)
+    chunks = []
 
-    path = BM25_DIR / f"{session_id}.json"
+    with SessionLocal() as db:
 
-    # Load previously saved chunks
-    records = []
+        files = db.query(EvidenceFile).filter_by(
+            investigation_id=investigation_id,
+            status="ready"
+        ).all()
 
-    if path.exists():
-        with open(path, "r", encoding="utf-8") as file:
-            records = json.load(file)
+        for file in files:
 
-    # Keep existing chunks using their unique IDs
-    saved = {}
+            documents = load_document(file.file_path)
 
-    for record in records:
-        chunk_id = record["metadata"]["chunk_id"]
-        saved[chunk_id] = record
+            chunks.extend(
+                split_document(
+                    documents,
+                    investigation_id,
+                    file.id,
+                    file.filename
+                )
+            )
 
-    # Add the new chunks
-    for chunk in chunks:
+    if not chunks:
+        return None
 
-        saved[chunk.metadata["chunk_id"]] = {
-            "text": chunk.page_content,
-            "metadata": chunk.metadata
-        }
-
-    # Save the evidence
-    temporary = path.with_suffix(".tmp")
-
-    with open(temporary, "w", encoding="utf-8") as file:
-        json.dump(
-            list(saved.values()),
-            file,
-            ensure_ascii=False
-        )
-
-    temporary.replace(path)
-
-
-# 2. Create our hybrid retriever
-def hybrid_search(question, session_id, k=10):
-
-    # Semantic retriever using Pinecone
-    vector_retriever = vector_store.as_retriever(
-        search_kwargs={
-            "k": k,
-            "namespace": session_id
-        }
+    retriever = BM25Retriever.from_documents(
+        chunks,
+        preprocess_func=tokenize
     )
 
-    # Load BM25 evidence for the current investigation
-    path = BM25_DIR / f"{session_id}.json"
+    retriever.k = 10
 
-    if not path.exists():
-        return vector_retriever.invoke(question)
+    return retriever
 
-    with open(path, "r", encoding="utf-8") as file:
-        records = json.load(file)
 
-    documents = []
+# Combine semantic search and BM25
+def hybrid_search(question, investigation_id):
 
-    # Convert saved evidence into LangChain Documents
-    for record in records:
+    vector_retriever = semantic_retriever(investigation_id)
 
-        document = Document(
-            page_content=record["text"],
-            metadata=record["metadata"]
-        )
+    bm25_retriever = keyword_retriever(investigation_id)
 
-        documents.append(document)
+    if not bm25_retriever:
+        return []
 
-    if not documents:
-        return vector_retriever.invoke(question)
-
-    # BM25 Retriever - same as your reference
-    bm25_retriever = BM25Retriever.from_documents(documents)
-    bm25_retriever.k = k
-
-    # Hybrid Retriever - same as your reference
+    # Weighted Reciprocal Rank Fusion
     hybrid_retriever = EnsembleRetriever(
         retrievers=[vector_retriever, bm25_retriever],
         weights=[0.7, 0.3],
         id_key="chunk_id"
     )
 
-    # Retrieve documents using both methods
-    retrieved_chunks = hybrid_retriever.invoke(question)
-
-    return retrieved_chunks[:k]
+    return hybrid_retriever.invoke(question)
