@@ -1,34 +1,43 @@
-# API server
+
+# FastAPI backend
 fastapi
 uvicorn
 python-multipart
 
-# Application configuration
+# Configuration
 pydantic-settings
-python-dotenv
 
-# Database
+# PostgreSQL
 sqlalchemy
 psycopg2-binary
 
-# AI, agents and tracing
+# LangChain and LLM providers
 langchain
 langchain-core
 langchain-google-genai
 langchain-groq
+
+# LangGraph and persistent memory
 langgraph
-langsmith
+langgraph-checkpoint-postgres
+psycopg[binary]
 
-# Retrieval and document ingestion
+# Pinecone vector database
 langchain-pinecone
-langchain-text-splitters
-langchain-community
 pinecone
-pypdf
-rank-bm25
-sentence-transformers
-jq   #json loader
 
-# Tests and HTTP
+# Document loading and splitting
+langchain-community
+langchain-text-splitters
+pypdf
+jq
+
+# Hybrid retrieval
+rank-bm25
+
+# Reranking
+sentence-transformers
+
+# Testing
 pytest
 httpx

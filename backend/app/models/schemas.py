@@ -1,17 +1,17 @@
 
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict
 
 
 # Data required to create an investigation
 class InvestigationCreate(BaseModel):
     title: str = "New investigation"
-    description: str | None = None
 
 
 # Data allowed when updating an investigation
 class InvestigationUpdate(BaseModel):
     title: str | None = None
-    description: str | None = None
     status: str | None = None
 
 
@@ -19,8 +19,7 @@ class InvestigationUpdate(BaseModel):
 class InvestigationResponse(BaseModel):
     id: int
     title: str
-    description: str | None
     status: str
-    summary: str | None
+    created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

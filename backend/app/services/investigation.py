@@ -1,11 +1,9 @@
 
-from sqlalchemy import select
-
 from app.db.database import SessionLocal
 from app.db.models import Investigation
 
 
-# 1. Create a new investigation
+# 1. Create an investigation
 def create_investigation(data):
 
     with SessionLocal() as db:
@@ -24,13 +22,9 @@ def list_investigations():
 
     with SessionLocal() as db:
 
-        investigations = db.scalars(
-            select(Investigation).order_by(
-                Investigation.created_at.desc()
-            )
+        return db.query(Investigation).order_by(
+            Investigation.created_at.desc()
         ).all()
-
-        return investigations
 
 
 # 3. Get one investigation
@@ -38,33 +32,26 @@ def get_investigation(investigation_id):
 
     with SessionLocal() as db:
 
-        investigation = db.get(
-            Investigation, investigation_id
-        )
-
-        return investigation
+        return db.get(Investigation, investigation_id)
 
 
+# 4. Update an investigation
 def update_investigation(investigation_id, data):
+
     with SessionLocal() as db:
-        # 1. Find the investigation by ID
+
         investigation = db.get(Investigation, investigation_id)
-        
-        # 2. If not found → return None
-        if investigation is None:
+
+        if not investigation:
             return None
 
-        # 3. Get only the fields that the user actually sent
-        updates = data.model_dump(
-            exclude_unset=True,   # ignore fields not sent
-            exclude_none=True     # ignore fields sent as null
-        )
+        # Update only the provided fields
+        updates = data.model_dump(exclude_unset=True, exclude_none=True)
 
-        # 4. Update those fields on the object
         for key, value in updates.items():
             setattr(investigation, key, value)
 
-        # 5. Save changes to database
         db.commit()
         db.refresh(investigation)
+
         return investigation

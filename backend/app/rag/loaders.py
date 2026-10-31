@@ -8,18 +8,18 @@ from langchain_community.document_loaders import (
 )
 
 
-# Load evidence files
+# Load evidence documents
 def load_document(file_path):
 
-    file_type = Path(file_path).suffix.lower()
+    extension = Path(file_path).suffix.lower()
 
-    if file_type in [".log", ".txt"]:
+    if extension in [".log", ".txt"]:
         loader = TextLoader(file_path, encoding="utf-8")
 
-    elif file_type == ".pdf":
+    elif extension == ".pdf":
         loader = PyPDFLoader(file_path)
 
-    elif file_type == ".json":
+    elif extension == ".json":
         loader = JSONLoader(
             file_path=file_path,
             jq_schema=".",
